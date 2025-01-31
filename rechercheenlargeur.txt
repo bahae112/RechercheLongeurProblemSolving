@@ -1,0 +1,148 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+typedef struct {
+    int x, y;
+} etat;
+
+typedef struct Noeud {
+    struct Noeud* suivant;
+    etat Etat;
+} noeud;
+
+typedef struct {
+    noeud* debut;
+    noeud* fin;
+} liste;
+
+liste listeNoeuds;
+liste NoeudsDejaTraites;
+int n;
+
+void initialiserListe(liste* l) {
+    l->debut = l->fin = NULL;
+}
+
+void inserer(etat etatCourant, liste* l) {
+    noeud* nouveauNoeud = (noeud*)malloc(sizeof(noeud));
+    if (!nouveauNoeud) {
+        printf("Erreur d'allocation mémoire.\n");
+        exit(1);
+    }
+    nouveauNoeud->Etat = etatCourant;
+    nouveauNoeud->suivant = NULL;
+
+    if (l->fin == NULL) {
+        l->debut = l->fin = nouveauNoeud;
+    } else {
+        l->fin->suivant = nouveauNoeud;
+        l->fin = nouveauNoeud;
+    }
+    printf("%i %i \n", (l->debut)->Etat.x, (l->debut)->Etat.y);
+}
+
+etat extraire(liste* l) {
+    if (l->debut == NULL) {
+        printf("Liste vide, impossible d'extraire.\n");
+        exit(1);
+    }
+
+    noeud* temp = l->debut;
+    etat etatCourant = temp->Etat;
+    l->debut = l->debut->suivant;
+    if (l->debut == NULL) {
+        l->fin = NULL;
+    }
+    free(temp);
+    return etatCourant;
+}
+
+int etatSolution(etat e, etat final) {
+    return (e.x == final.x && e.y == final.y);
+}
+
+int appartient(etat e, liste l) {
+    noeud* temp = l.debut;
+    while (temp != NULL) {
+        if (temp->Etat.x == e.x && temp->Etat.y == e.y) {
+            return 1;
+        }
+        temp = temp->suivant;
+    }
+    return 0;
+}
+
+void genereSuccesseurs(etat et) {
+    int x0 = et.x, y0 = et.y, m;
+    etat e;
+    // Remplir la première cruche
+    if (x0 < 4) {
+        e.x = 4;
+        e.y = y0;
+        inserer(e, &listeNoeuds);
+    }
+    // Vider la première cruche
+    if (x0 > 0) {
+        e.x = 0;
+        e.y = y0;
+        inserer(e, &listeNoeuds);
+    }
+    // Remplir la seconde cruche
+    if (y0 < 3) {
+        e.y = 3;
+        e.x = x0;
+        inserer(e, &listeNoeuds);
+    }
+    // Vider la seconde cruche
+    if (y0 > 0) {
+        e.y = 0;
+        e.x = x0;
+        inserer(e, &listeNoeuds);
+    }
+    // Transvaser de la première à la seconde cruche
+    if (x0 > 0 && y0 < 3) {
+        m = fmin(x0, 3 - y0);
+        e.x = x0 - m;
+        e.y = y0 + m;
+        inserer(e, &listeNoeuds);
+    }
+    // Transvaser de la seconde à la première cruche
+    if (y0 > 0 && x0 < 4) {
+        m = fmin(4 - x0, y0);
+        e.x = x0 + m;
+        e.y = y0 - m;
+        inserer(e, &listeNoeuds);
+    }
+}
+
+void rechercheLargeur(etat etatInitial, etat etatFinal) {
+    initialiserListe(&listeNoeuds);
+    initialiserListe(&NoeudsDejaTraites);
+
+    inserer(etatInitial, &listeNoeuds);
+
+    while (listeNoeuds.debut != NULL) {
+        etat courant = extraire(&listeNoeuds);
+
+        if (etatSolution(courant, etatFinal)) {
+            printf("Solution trouvée: (%d, %d)\n", courant.x, courant.y);
+            return;
+        }
+
+        if (!appartient(courant, NoeudsDejaTraites)) {
+            genereSuccesseurs(courant);
+            inserer(courant, &NoeudsDejaTraites);
+            n++;
+        }
+    }
+    printf("Pas de solution.\n");
+}
+
+int main() {
+    etat etatInitial = {0, 0};
+    etat etatFinal = {2, 0}; // Ajustez cet état final selon le problème
+    rechercheLargeur(etatInitial, etatFinal);
+    printf("le nombre de noeuds : %i",n);
+    return 0;
+}

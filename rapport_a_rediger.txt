@@ -1,0 +1,4 @@
+partie modelisation rapport :
+ ++ introduction (les algorithmes utilisés + le but du jeu + les regles ) 
+ ++modelisation ( la figure des arbres )
+ ++les resultats( sous forme de capture d'écrans )

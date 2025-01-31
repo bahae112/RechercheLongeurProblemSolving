@@ -1,0 +1,90 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+typedef struct {
+    int x, y;
+} etat;
+
+typedef struct Noeud {
+    struct noeud* suivant;
+    etat Etat;
+} noeud;
+
+typedef struct {
+    noeud* debut;
+    noeud* fin;
+} liste;
+
+liste listeNoeuds;
+
+void inserer(etat etatcourant, liste listeNoeuds) {
+    noeud* nouveauNoeud = (noeud*)malloc(sizeof(noeud));
+    nouveauNoeud->Etat = etatcourant;
+    nouveauNoeud->suivant = NULL;
+    if (listeNoeuds.debut == NULL) {
+        listeNoeuds.debut = nouveauNoeud;
+        listeNoeuds.fin = nouveauNoeud;
+    } else {
+        listeNoeuds.fin->suivant = nouveauNoeud;
+        listeNoeuds.fin = nouveauNoeud;
+    }
+    printf("%i",(listeNoeuds.debut)->Etat.x);
+    printf("%i",(listeNoeuds.debut)->Etat.y);
+}
+etat extraire(liste* L){
+  liste L0;
+  L0 = *L;
+  etat e;
+  noeud* temp;
+  if(L0.debut != NULL){
+    e = L0.debut->Etat;
+    if(L0.debut == L0.fin){
+        L0.fin == NULL;
+        temp = L0.debut;
+        free(temp);
+        L0.debut = L0.debut->suivant;
+        *L = L0;
+        return e;
+    }
+  }
+}
+int etatsolution(etat etatcourant){
+   return (etatcourant.x == 2);
+}
+int Appartient(etat etatcourant,liste noeuddejatraites){
+    noeud* Q =noeuddejatraites.debut ;
+    while(Q->suivant != NULL && Q->Etat.x != etatcourant.x && Q->Etat.y != etatcourant.y) Q = Q->suivant;  // for(p=L.debut ; p!=NULL;p=p->suivant)
+    if(Q == NULL)return 0;
+    else return 1;
+}
+void genereSuccesseurs(etat et)
+{ int x0, y0, m;
+x0 = et.x;
+y0 = et.y;
+etat e;
+if (x0<4) { e.x=4; e.y=y0;
+inserer(e,listeNoeuds); }
+if (x0>0) { e.x=0; e.y=y0;
+inserer(e,listeNoeuds); }
+if (y0<3) { e.y=3; e.x=x0;
+inserer(e,listeNoeuds); }
+if (y0>0) { e.y=0; e.x=x0; /*vider c-3l*/
+inserer(e,listeNoeuds); }
+if (x0>0 && y0<3) { m=fmin(x0,3-y0);
+e.x=x0-m; e.y=y0+m;
+inserer(e,listeNoeuds); } /*transvaser c-4l dans c-3l*/
+if (y0>0 && x0<4) { m=fmin(4-x0,y0);
+e.x=x0+m; e.y=y0-m;
+inserer(e,listeNoeuds); } /*transvaser c-3l dans c-4l*/
+}
+
+int main() {
+    etat etatcourant = {1, 2};
+
+    listeNoeuds.debut = NULL;
+    listeNoeuds.fin = NULL;
+
+    inserer(etatcourant, listeNoeuds);
+
+    return 0;
+}
